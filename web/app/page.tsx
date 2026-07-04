@@ -6,47 +6,15 @@ import { PostCard } from "@/components/PostCard";
 import { RegisterModal } from "@/components/RegisterModal";
 import { useProfile } from "@/hooks/useProfile";
 import { useCreatePost } from "@/hooks/useCreatePost";
+import { useFeed } from "@/hooks/useFeed";
 import { useAccount } from "wagmi";
 import { useEffect, useState } from "react";
-
-const DUMMY_POSTS = [
-  {
-    author: "alice.arc",
-    handle: "@alice",
-    time: "2 min ago",
-    content: "Just deployed my first contract on Arc testnet. Finality is insanely fast — barely felt the confirmation wait. 🔷",
-    likes: 24, reposts: 5, comments: 8,
-    tipAmount: "0.50",
-  },
-  {
-    author: "bejo",
-    handle: "@bejo",
-    time: "15 min ago",
-    content: "Gas fees in USDC is a game changer for onboarding. Regular users don't need to worry about ETH just to try a DApp. Arc really gets UX.",
-    likes: 11, reposts: 2, comments: 3,
-  },
-  {
-    author: "rini.arc",
-    handle: "@rini",
-    time: "1h ago",
-    content: "If social media is truly on-chain, who can delete your post? Nobody. That's powerful — and a huge responsibility.",
-    likes: 47, reposts: 13, comments: 19,
-    tipAmount: "2.00",
-  },
-  {
-    author: "novadust",
-    handle: "@nova",
-    time: "3h ago",
-    content: "Arciden just launched on testnet — first time I'm using a social media that's genuinely on-chain. So excited! 🚀",
-    likes: 33, reposts: 9, comments: 7,
-    tipAmount: "1.00",
-  },
-];
 
 export default function Home() {
   const { isConnected } = useAccount();
   const { hasProfile, profile, refetch } = useProfile();
-  const { createPost, isPending } = useCreatePost();
+  const { createPost, isPending, isSuccess } = useCreatePost();
+  const { posts, loading, refetch: refetchFeed } = useFeed();
   const [mounted, setMounted] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [postContent, setPostContent] = useState("");
@@ -61,11 +29,29 @@ export default function Home() {
     }
   }, [mounted, isConnected, hasProfile]);
 
+  // Refresh feed setelah post berhasil
+  useEffect(() => {
+    if (isSuccess) {
+      setPostContent("");
+      setTimeout(() => refetchFeed(), 2000);
+    }
+  }, [isSuccess]);
+
   if (!mounted) return null;
 
   const avatarText = profile?.username
     ? profile.username.slice(0, 2).toUpperCase()
     : "YO";
+
+  // Format timestamp
+  function timeAgo(timestamp: bigint) {
+    const now = Math.floor(Date.now() / 1000);
+    const diff = now - Number(timestamp);
+    if (diff < 60) return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+  }
 
   return (
     <div className="flex min-h-screen max-w-6xl mx-auto">
@@ -129,7 +115,7 @@ export default function Home() {
                     <div className="flex items-center gap-3">
                       <span className="text-xs text-gray-300">{postContent.length}/280</span>
                       <button
-                        onClick={() => { if (postContent.trim()) { createPost(postContent); setPostContent(""); } }}
+                        onClick={() => { if (postContent.trim()) createPost(postContent); }}
                         disabled={!postContent.trim() || isPending}
                         className="bg-blue-900 hover:bg-blue-800 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold px-6 py-2 rounded-full transition"
                       >
@@ -141,11 +127,34 @@ export default function Home() {
               </div>
             </div>
 
-            {/* POSTS */}
+            {/* LIVE FEED */}
             <div className="p-4">
-              {DUMMY_POSTS.map((post, i) => (
-                <PostCard key={i} {...post} />
-              ))}
+              {loading ? (
+                <div className="text-center py-12">
+                  <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-900 rounded-full animate-spin mx-auto mb-3"></div>
+                  <p className="text-sm text-gray-400">Loading posts from blockchain...</p>
+                </div>
+              ) : posts.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-4xl mb-3">🔷</div>
+                  <p className="text-gray-400 text-sm">No posts yet. Be the first to cast!</p>
+                </div>
+              ) : (
+                posts.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    author={post.username || post.author.slice(0, 8)}
+                    handle={`@${post.username || post.author.slice(0, 6)}`}
+                    time={timeAgo(post.timestamp)}
+                    content={post.contentURI}
+                    likes={0}
+                    reposts={0}
+                    comments={0}
+                    postId={post.id}
+                    creator={post.author}
+                  />
+                ))
+              )}
             </div>
           </div>
         )}
