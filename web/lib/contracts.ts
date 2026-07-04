@@ -103,6 +103,44 @@ export const FEED_CONTRACT_ABI = [
     outputs: [{ name: "", type: "bytes32[]" }],
   },
   {
+    name: "follow",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "_target", type: "address" }],
+    outputs: [],
+  },
+  {
+    name: "unfollow",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "_target", type: "address" }],
+    outputs: [],
+  },
+  {
+    name: "isFollowing",
+    type: "function",
+    stateMutability: "view",
+    inputs: [
+      { name: "", type: "address" },
+      { name: "", type: "address" },
+    ],
+    outputs: [{ name: "", type: "bool" }],
+  },
+  {
+    name: "getFollowingCount",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "_user", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    name: "getFollowersCount",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "_user", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
     name: "PostCreated",
     type: "event",
     inputs: [
