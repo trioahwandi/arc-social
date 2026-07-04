@@ -1,0 +1,12 @@
+{
+  "network": "arc_testnet",
+  "chainId": 5042002,
+  "explorer": "https://testnet.arcscan.app",
+  "contracts": {
+    "ProfileRegistry": "0x409c35d67ed0EbA2670139df0662854692649d00",
+    "FeedContract": "0x27611Ac740e840eb428fbDf9136C5132c1446A22",
+    "TipContract": "0x91E563C6ffa58005ed134c2f8E2bBCa032533dC1"
+  },
+  "deployedAt": "2026-07-01",
+  "deployer": "0x48B4c95dF8e359895F45f491D5e8654a27116a2b"
+}
