@@ -26,15 +26,16 @@ export function useComments(postId: `0x${string}`) {
     try {
       setLoading(true);
 
-      // Ambil semua post dari global feed dengan limit besar
+      // Ambil semua post dari author dengan limit besar
       const feedIds = await client.readContract({
         address: CONTRACT_ADDRESSES.FeedContract,
         abi: FEED_CONTRACT_ABI,
         functionName: "getGlobalFeed",
-        args: [BigInt(0), BigInt(100)],
+        args: [BigInt(0), BigInt(200)],
       }) as `0x${string}`[];
 
       const replies: Comment[] = [];
+      const normalizedPostId = postId.toLowerCase();
 
       for (const id of feedIds) {
         const post = await client.readContract({
@@ -44,8 +45,9 @@ export function useComments(postId: `0x${string}`) {
           args: [id],
         }) as any;
 
-        // Cek apakah ini reply dari postId yang kita cari
-        if (post.parentId !== postId) continue;
+        // Normalize comparison
+        const normalizedParentId = post.parentId?.toLowerCase();
+        if (normalizedParentId !== normalizedPostId) continue;
         if (!post.isActive) continue;
 
         const profile = await client.readContract({
@@ -66,7 +68,7 @@ export function useComments(postId: `0x${string}`) {
 
       setComments(replies);
     } catch (err) {
-      console.error(err);
+      console.error("Failed to load comments:", err);
     } finally {
       setLoading(false);
     }
