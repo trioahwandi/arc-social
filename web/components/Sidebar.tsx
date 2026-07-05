@@ -4,13 +4,13 @@ import { useAccount } from "wagmi";
 import { ConnectWallet } from "./ConnectWallet";
 
 const navItems = [
-  { label: "Home", href: "/" },
-  { label: "Search", href: "/search" },
+  { label: "Home", href: "/", badge: 0 },
+  { label: "Search", href: "/search", badge: 0 },
   { label: "Notifications", href: "/notifications", badge: 2 },
-  { label: "Wallet", href: "/wallet" },
-  { label: "Leaderboard", href: "/leaderboard" },
-  { label: "Connect", href: "/connect" },
-  { label: "Settings", href: "/settings" },
+  { label: "Wallet", href: "/wallet", badge: 0 },
+  { label: "Profile", href: "/profile", badge: 0 },
+  { label: "Leaderboard", href: "/leaderboard", badge: 0 },
+  { label: "Settings", href: "/settings", badge: 0 },
 ];
 
 export function Sidebar() {

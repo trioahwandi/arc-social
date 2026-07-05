@@ -141,6 +141,13 @@ export const FEED_CONTRACT_ABI = [
     outputs: [{ name: "", type: "uint256" }],
   },
   {
+    name: "getPostsByAuthor",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "_author", type: "address" }],
+    outputs: [{ name: "", type: "bytes32[]" }],
+  },
+  {
     name: "PostCreated",
     type: "event",
     inputs: [
