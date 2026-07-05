@@ -25,34 +25,27 @@ export function useComments(postId: `0x${string}`) {
     if (!client || !postId) return;
     try {
       setLoading(true);
-      // Query PostCreated events dengan parentId = postId
-      const logs = await client.getLogs({
+
+      // Ambil semua post dari global feed dengan limit besar
+      const feedIds = await client.readContract({
         address: CONTRACT_ADDRESSES.FeedContract,
-        event: {
-          name: "PostCreated",
-          type: "event",
-          inputs: [
-            { name: "postId", type: "bytes32", indexed: true },
-            { name: "author", type: "address", indexed: true },
-            { name: "parentId", type: "bytes32", indexed: false },
-            { name: "timestamp", type: "uint256", indexed: false },
-          ],
-        },
-        fromBlock: BigInt(0),
-      });
+        abi: FEED_CONTRACT_ABI,
+        functionName: "getGlobalFeed",
+        args: [BigInt(0), BigInt(100)],
+      }) as `0x${string}`[];
 
       const replies: Comment[] = [];
-      for (const log of logs) {
-        const args = log.args as any;
-        if (args.parentId !== postId) continue;
 
+      for (const id of feedIds) {
         const post = await client.readContract({
           address: CONTRACT_ADDRESSES.FeedContract,
           abi: FEED_CONTRACT_ABI,
           functionName: "getPost",
-          args: [args.postId],
+          args: [id],
         }) as any;
 
+        // Cek apakah ini reply dari postId yang kita cari
+        if (post.parentId !== postId) continue;
         if (!post.isActive) continue;
 
         const profile = await client.readContract({
@@ -63,13 +56,14 @@ export function useComments(postId: `0x${string}`) {
         }) as any;
 
         replies.push({
-          id: args.postId,
+          id: post.id,
           author: post.author,
           contentURI: post.contentURI,
           timestamp: post.timestamp,
           username: profile.username || post.author.slice(0, 8),
         });
       }
+
       setComments(replies);
     } catch (err) {
       console.error(err);
