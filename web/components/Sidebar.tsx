@@ -29,7 +29,7 @@ export function Sidebar() {
         {navItems.map((item) => (
           <a key={item.label} href={item.href} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-600 hover:bg-blue-50 hover:text-blue-900 transition font-medium text-sm">
             <span>{item.label}</span>
-            {item.badge && <span className="ml-auto bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">{item.badge}</span>}
+            {item.badge > 0 && <span className="ml-auto bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">{item.badge}</span>}
           </a>
         ))}
       </nav>
