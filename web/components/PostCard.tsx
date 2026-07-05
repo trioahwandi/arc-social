@@ -73,7 +73,12 @@ export function PostCard({ author, handle, time, content, likes, reposts, commen
               <button className="text-gray-300 hover:text-gray-500 text-lg leading-none">···</button>
             </div>
 
-            <p className="text-gray-700 text-sm leading-relaxed mb-3">{content}</p>
+            <p
+  onClick={() => postId && window.location.assign(`/post/${postId}`)}
+  className={`text-gray-700 text-sm leading-relaxed mb-3 ${postId ? "cursor-pointer hover:text-blue-900" : ""}`}
+>
+  {content}
+</p>
 
             <div className="flex items-center gap-1">
               <button
