@@ -9,9 +9,11 @@ import { useEffect, useState } from "react";
 import { CONTRACT_ADDRESSES, FEED_CONTRACT_ABI } from "@/lib/contracts";
 import { arcTestnet } from "@/lib/wagmi";
 
+const EMPTY_BYTES32 = "0x0000000000000000000000000000000000000000000000000000000000000000";
+
 export default function ProfilePage() {
   const { address, isConnected } = useAccount();
-  const { profile, hasProfile } = useProfile();
+  const { profile } = useProfile();
   const [mounted, setMounted] = useState(false);
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,7 +21,6 @@ export default function ProfilePage() {
 
   useEffect(() => { setMounted(true); }, []);
 
-  // Ambil post IDs milik user
   const { data: postIds } = useReadContract({
     address: CONTRACT_ADDRESSES.FeedContract,
     abi: FEED_CONTRACT_ABI,
@@ -28,7 +29,6 @@ export default function ProfilePage() {
     query: { enabled: !!address },
   });
 
-  // Ambil following & followers count
   const { data: followingCount } = useReadContract({
     address: CONTRACT_ADDRESSES.FeedContract,
     abi: FEED_CONTRACT_ABI,
@@ -61,6 +61,8 @@ export default function ProfilePage() {
             functionName: "getPost",
             args: [postId],
           }) as any;
+          // Skip reply
+          if (post.parentId !== EMPTY_BYTES32) continue;
           if (post.isActive) loaded.push(post);
         }
         setPosts(loaded);
@@ -87,7 +89,6 @@ export default function ProfilePage() {
   return (
     <div className="flex min-h-screen max-w-6xl mx-auto">
       <Sidebar />
-
       <main className="flex-1 border-x border-blue-100 min-w-0">
         {!isConnected ? (
           <div className="flex flex-col items-center justify-center h-full py-32 text-center">
@@ -96,7 +97,6 @@ export default function ProfilePage() {
           </div>
         ) : (
           <div>
-            {/* COVER */}
             <div className="h-32 bg-gradient-to-r from-blue-900 to-blue-600 relative">
               <div className="absolute -bottom-10 left-6">
                 <div className="w-20 h-20 rounded-full bg-blue-900 border-4 border-white flex items-center justify-center text-white font-bold text-2xl">
@@ -105,48 +105,31 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* PROFILE INFO */}
             <div className="pt-14 px-6 pb-4 border-b border-blue-100">
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h1 className="text-xl font-bold text-gray-900">
-                      {profile?.username || "No username"}
-                    </h1>
+                    <h1 className="text-xl font-bold text-gray-900">{profile?.username || "No username"}</h1>
                     <span className="text-blue-500">✓</span>
                   </div>
-                  <p className="text-sm text-gray-400">
-                    {address?.slice(0, 6)}...{address?.slice(-4)}
-                  </p>
+                  <p className="text-sm text-gray-400">{address?.slice(0, 6)}...{address?.slice(-4)}</p>
                 </div>
                 <button className="border border-gray-200 text-gray-600 text-sm font-semibold px-4 py-2 rounded-full hover:bg-gray-50 transition">
                   Edit Profile
                 </button>
               </div>
 
-              {/* STATS */}
               <div className="flex gap-5 mb-3">
-                <div>
-                  <span className="font-bold text-gray-900">{posts.length}</span>
-                  <span className="text-gray-400 text-sm ml-1">Posts</span>
-                </div>
-                <div>
-                  <span className="font-bold text-gray-900">{followingCount?.toString() || "0"}</span>
-                  <span className="text-gray-400 text-sm ml-1">Following</span>
-                </div>
-                <div>
-                  <span className="font-bold text-gray-900">{followersCount?.toString() || "0"}</span>
-                  <span className="text-gray-400 text-sm ml-1">Followers</span>
-                </div>
+                <div><span className="font-bold text-gray-900">{posts.length}</span><span className="text-gray-400 text-sm ml-1">Posts</span></div>
+                <div><span className="font-bold text-gray-900">{followingCount?.toString() || "0"}</span><span className="text-gray-400 text-sm ml-1">Following</span></div>
+                <div><span className="font-bold text-gray-900">{followersCount?.toString() || "0"}</span><span className="text-gray-400 text-sm ml-1">Followers</span></div>
               </div>
 
-              {/* ON-CHAIN BADGE */}
               <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full">
                 🔷 On-chain since block #{profile?.registeredAt?.toString() || "..."}
               </div>
             </div>
 
-            {/* TABS */}
             <div className="flex border-b border-blue-100">
               {["Posts", "Replies", "Media"].map((tab, i) => (
                 <button key={tab} className={`px-5 py-4 text-sm font-medium transition relative ${i === 0 ? "text-blue-900 font-semibold" : "text-gray-400"}`}>
@@ -156,7 +139,6 @@ export default function ProfilePage() {
               ))}
             </div>
 
-            {/* USER POSTS */}
             <div className="p-4">
               {loading ? (
                 <div className="text-center py-12">
@@ -188,7 +170,6 @@ export default function ProfilePage() {
           </div>
         )}
       </main>
-
       <RightSidebar />
     </div>
   );
